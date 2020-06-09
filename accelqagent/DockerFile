@@ -1,0 +1,26 @@
+FROM ubuntu:16.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN echo "APT::Get::Assume-Yes \"true\";" > /etc/apt/apt.conf.d/90assumeyes
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xB1998361219BD9C9
+RUN echo 'deb http://repos.azulsystems.com/debian stable main' > /etc/apt/sources.list.d/zulu.list
+RUN apt-get update \
+&& apt-get install -y --no-install-recommends \
+            curl \
+            unzip \
+            wget \
+            zulu-8 
+RUN curl -o - http://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add
+RUN echo "deb [arch=amd64]  http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
+RUN apt-get update \
+&& apt-get install -y --no-install-recommends \
+            google-chrome-stable \
+            uuid-runtime
+RUN curl http://s3.amazonaws.com/accelq/releases/accelQAgent-jdk8-4.2.3.zip -o /agent.zip \
+&& unzip /agent.zip -d ~/
+RUN wget https://chromedriver.storage.googleapis.com/81.0.4044.69/chromedriver_linux64.zip \
+&& unzip -o chromedriver_linux64.zip -d /root/agent/web_drivers/linux/
+WORKDIR /root/agent
+COPY $PWD\PropertiesFiles\ ./
+#RUN rm -rf /root/agent/libs/3_p/javaee-api-7.0.jar /root/agent/libs/3_p/javaee-web-api-7.0.jar
+CMD ["bash","./start_agent.sh"] 
